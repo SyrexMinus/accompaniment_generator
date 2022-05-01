@@ -22,6 +22,14 @@ class Composition:
             self.notes, self.ticks_per_beat, self.tempo = self._read_midi_file(midi_file)
 
     @property
+    def notes_at(self):
+        notes_at = {}
+        for note in self.notes:
+            notes_at[note.start_time] = notes_at.get(note.start_time, [])
+            notes_at[note.start_time].append(note)
+        return notes_at
+
+    @property
     def as_midi(self) -> MidiFile:
         # Note: order of messages in tracks matters
         mid = MidiFile(self.MIDI_TEMPLATE_PATH, clip=True)

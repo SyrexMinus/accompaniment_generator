@@ -19,9 +19,3 @@ class CompositionNote(Note):
     @property
     def end_time(self) -> float:
         return self.start_time + self.duration
-
-
-# class MidiNote:
-#     def __init__(self, note: Tuple[Message, Message]):
-#         assert note[0].type == "note_on" and note[1].type == "note_off", "note must consist of (note_on, note_off)"
-#         self.note = note
