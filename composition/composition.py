@@ -5,6 +5,10 @@ from mido import MidiFile, Message
 from composition.note import CompositionNote
 
 
+MAJOR_TONIC = "major"
+MINOR_TONIC = "minor"
+
+
 class Composition:
     MIDI_TEMPLATE_PATH = "composition/template.mid"
 
@@ -42,8 +46,41 @@ class Composition:
         self.as_midi.save(filename)
 
     @property
-    def key(self):
-        raise NotImplementedError  # TODO
+    def key(self) -> Tuple[int, str]:
+        MAJOR_KEY_OFFSETS = [0, 2, 2, 1, 2, 2, 2, 1]
+        MINOR_KEY_OFFSETS = [0, 2, 1, 2, 2, 1, 2, 2]
+        min_note_num = self.notes[0].note
+        max_note_num = self.notes[0].note
+        notes_used = {}
+        for note in self.notes:
+            note_num = note.note
+            if note_num < min_note_num:
+                min_note_num = note_num
+            if note_num > max_note_num:
+                max_note_num = note_num
+            notes_used[note_num] = notes_used.get(note_num, 0)
+            notes_used[note_num] += 1
+        most_similar_key_tonic = min_note_num % 12
+        most_similar_key_scale = MAJOR_TONIC
+        max_similarity = 0
+        considered_keys = [i for i in range(min_note_num, min_note_num-13, -1)] + \
+                          [i for i in range(min_note_num+1, max_note_num+1)]
+        for key in considered_keys:
+            major_similarity = 0
+            minor_similarity = 0
+            for offset in MAJOR_KEY_OFFSETS:
+                major_similarity += notes_used.get(key + offset, 0)
+            for offset in MINOR_KEY_OFFSETS:
+                minor_similarity += notes_used.get(key + offset, 0)
+            if major_similarity > max_similarity:
+                most_similar_key_tonic = key % 12
+                most_similar_key_scale = MAJOR_TONIC
+                max_similarity = major_similarity
+            if minor_similarity > max_similarity:
+                most_similar_key_tonic = key % 12
+                most_similar_key_scale = MINOR_TONIC
+                max_similarity = minor_similarity
+        return most_similar_key_tonic, most_similar_key_scale
 
     def _notes_to_midi_messages(self, notes: List[CompositionNote]) -> List[Message]:
         messages = []
@@ -64,7 +101,7 @@ class Composition:
     def _read_midi_file(self, midi_file: MidiFile) -> Tuple[List[CompositionNote], int, int]:
         """Returns (notes, ticks_per_beat, tempo)"""
         # Note: order of messages in tracks matters
-        note_messages = midi_file.tracks[2][2:-1]
+        note_messages = midi_file.tracks[1][2:-1]
         notes = []
         notes_buffer = {}
         time = 0
