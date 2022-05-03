@@ -1,30 +1,12 @@
 from typing import Dict
 
-from composition.composition import Composition
-
-ENABLE_MISSING_ACCOMP_FOR_MELODY_TICK = True
-MISSING_ACCOMP_FOR_MELODY_TICK = "missing_accompaniment_for_melody_tick"
-ENABLE_EXCESS_ACCOMP_TICK_FOR_MELODY = True
-EXCESS_ACCOMP_TICK_FOR_MELODY = "excessive_accompaniment_tick_for_melody"
-ENABLE_TOO_BIG_CHORD_DROP = True
-TOO_BIG_CHORD_DROP = "too_big_chord_drop"
-TOO_BIG_CHORD_DROP_IN_NOTES = 8
-ENABLE_ACCOMP_TICK_NOT_BELOW_MELODY = True
-ACCOMP_TICK_NOT_BELOW_MELODY = "accompaniment_tick_is_not_below_melody"
-ENABLE_DISSONANCE_INSIDE = True
-DISSONANCE_INSIDE = "dissonance_inside"
-ENABLE_DISSONANCE_WITH_MELODY = True
-DISSONANCE_WITH_MELODY = "dissonance_with_melody"
-ENABLE_EMPTY_ACCOMPANIMENT = True
-EMPTY_ACCOMPANIMENT = "empty_accompaniment"
-EVENT_TO_AWARD_WEIGHTS = {
-    MISSING_ACCOMP_FOR_MELODY_TICK: -1,
-    EXCESS_ACCOMP_TICK_FOR_MELODY: -10,
-    TOO_BIG_CHORD_DROP: -20,
-    ACCOMP_TICK_NOT_BELOW_MELODY: -5,
-    DISSONANCE_INSIDE: -3,
-    EMPTY_ACCOMPANIMENT: -1000
-}
+from app_config import ENABLE_EMPTY_ACCOMPANIMENT, ENABLE_MISSING_ACCOMP_FOR_MELODY_TICK, \
+    ENABLE_EXCESS_ACCOMP_TICK_FOR_MELODY, ENABLE_TOO_BIG_CHORD_DROP, TOO_BIG_CHORD_DROP_IN_NOTES, \
+    ENABLE_ACCOMP_TICK_NOT_BELOW_MELODY, ENABLE_DISSONANCE_INSIDE, EVENT_TO_AWARD_WEIGHTS
+from music_interfaces.composition.composition import Composition
+from genetic_algorithm.fitness_function.fitness_constants import MISSING_ACCOMP_FOR_MELODY_TICK, \
+    EXCESS_ACCOMP_TICK_FOR_MELODY, TOO_BIG_CHORD_DROP, ACCOMP_TICK_NOT_BELOW_MELODY, DISSONANCE_INSIDE, \
+    EMPTY_ACCOMPANIMENT, DISSONANCE_WITH_MELODY
 
 
 def fitness_function(melody: Composition, accompaniment: Composition) -> float:
@@ -39,10 +21,12 @@ def _calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[
         TOO_BIG_CHORD_DROP: 0,
         ACCOMP_TICK_NOT_BELOW_MELODY: 0,
         DISSONANCE_INSIDE: 0,
-        EMPTY_ACCOMPANIMENT: 0
+        EMPTY_ACCOMPANIMENT: 0,
+        DISSONANCE_WITH_MELODY: 0,
     }  # TODO add anti-metrics
     m_notes_at = melody.notes_at
     a_notes_at = accompaniment.notes_at
+    m_key_tonic, m_key_scale = melody.key
 
     # preprocess inputs
     for time, notes in m_notes_at.items():
@@ -80,9 +64,11 @@ def _calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[
                     m_min_chord_note = m_notes_at[a_time][0].note
                     if m_min_chord_note <= max_chord_note:
                         metrics[ACCOMP_TICK_NOT_BELOW_MELODY] += 1
-            if ENABLE_DISSONANCE_INSIDE:
-                # includes septimes, seconds, tritons https://ru.wikipedia.org/wiki/Консонанс_и_диссонанс
-                for i1 in range(len(a_notes_at[a_time])):
+            for i1 in range(len(a_notes_at[a_time])):
+                # if ENABLE_DISSONANCE_WITH_MELODY:
+                #     pass  # TODO
+                if ENABLE_DISSONANCE_INSIDE:
+                    # includes septimes, seconds, tritons https://ru.wikipedia.org/wiki/Консонанс_и_диссонанс
                     for i2 in range(i1 + 1, len(a_notes_at[a_time])):
                         note1 = a_notes_at[a_time][i1]
                         note2 = a_notes_at[a_time][i2]
@@ -106,8 +92,6 @@ def _calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[
                         #     metrics[DISSONANCE_INSIDE] += 1
                         elif abs(note1_num - note2_num) == 6:  # triton
                             metrics[DISSONANCE_INSIDE] += 1
-            # if ENABLE_DISSONANCE_WITH_MELODY:
-            #     pass  # TODO
             prev_max_chord_note = max_chord_note
             prev_min_chord_note = min_chord_note
 

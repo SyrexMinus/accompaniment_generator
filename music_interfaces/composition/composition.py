@@ -2,15 +2,13 @@ from typing import List, Tuple
 
 from mido import MidiFile, Message
 
-from composition.note import CompositionNote
-
-
-MAJOR_TONIC = "major"
-MINOR_TONIC = "minor"
+from music_interfaces.composition.composition_constants import MAJOR_TONIC, MINOR_TONIC
+from music_interfaces.note import CompositionNote
 
 
 class Composition:
-    MIDI_TEMPLATE_PATH = "composition/template.mid"
+    MIDI_TEMPLATE_PATH = "music_interfaces/composition/template.mid"
+    min_duration: int = None
 
     def __init__(self, notes: List[CompositionNote] = None, ticks_per_beat: int = None, tempo: int = None,
                  midi_file: MidiFile = None):
@@ -39,7 +37,9 @@ class Composition:
         mid = MidiFile(self.MIDI_TEMPLATE_PATH, clip=True)
         mid.ticks_per_beat = self.ticks_per_beat
         mid.tracks[0][1].tempo = self.tempo
-        mid.tracks[1] = mid.tracks[1][:2] + self._notes_to_midi_messages(self.notes) + [mid.tracks[1][-1]]
+        mid.tracks[1] = mid.tracks[1][:2] + self._notes_to_midi_messages() + [mid.tracks[1][-1]]
+        if self.min_duration is not None:
+            mid.tracks[1][-1].time = self.min_duration - max([note.end_time for note in self.notes])
         return mid
 
     def save_midi(self, filename: str):
@@ -47,6 +47,7 @@ class Composition:
 
     @property
     def key(self) -> Tuple[int, str]:
+        """Returns the most probable key as (tonic (int[0-11]), scale (str["major"/"minor"]))"""
         MAJOR_KEY_OFFSETS = [0, 2, 2, 1, 2, 2, 2, 1]
         MINOR_KEY_OFFSETS = [0, 2, 1, 2, 2, 1, 2, 2]
         min_note_num = self.notes[0].note
@@ -82,10 +83,20 @@ class Composition:
                 max_similarity = minor_similarity
         return most_similar_key_tonic, most_similar_key_scale
 
-    def _notes_to_midi_messages(self, notes: List[CompositionNote]) -> List[Message]:
+    @property
+    def duration(self) -> int:
+        """Returns duration in ticks"""
+        return max([note.end_time for note in self.notes] + [self.min_duration])
+
+    def clone(self):
+        copy = Composition(notes=self.notes, ticks_per_beat=self.ticks_per_beat, tempo=self.tempo)
+        copy.min_duration = self.min_duration
+        return copy
+
+    def _notes_to_midi_messages(self) -> List[Message]:
         messages = []
         times = {}
-        for note in notes:
+        for note in self.notes:
             times[note.start_time] = times.get(note.start_time, [])
             times[note.start_time].append((note.note, "note_on"))
             times[note.end_time] = times.get(note.end_time, [])

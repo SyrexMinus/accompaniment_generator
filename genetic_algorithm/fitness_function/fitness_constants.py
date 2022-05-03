@@ -1,0 +1,7 @@
+MISSING_ACCOMP_FOR_MELODY_TICK = "missing_accompaniment_for_melody_tick"
+EXCESS_ACCOMP_TICK_FOR_MELODY = "excessive_accompaniment_tick_for_melody"
+TOO_BIG_CHORD_DROP = "too_big_chord_drop"
+ACCOMP_TICK_NOT_BELOW_MELODY = "accompaniment_tick_is_not_below_melody"
+DISSONANCE_INSIDE = "dissonance_inside"
+DISSONANCE_WITH_MELODY = "dissonance_with_melody"
+EMPTY_ACCOMPANIMENT = "empty_accompaniment"

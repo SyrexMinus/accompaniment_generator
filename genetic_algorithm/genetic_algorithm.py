@@ -2,14 +2,15 @@ import random
 from math import ceil
 from typing import Callable, List, Tuple
 
-from composition.composition import Composition
+from genetic_algorithm.mutation_strategy import get_random_candidate
+from music_interfaces.composition.composition import Composition
 
 
 class GeneticAlgorithm:
     def __init__(self, melody: Composition, fitness_function: Callable[[Composition, Composition], float],
                  reproduction_function: Callable[[Composition, int], List[Composition]],
-                 crossover_strategy: Callable[[Composition, Composition], (Composition, Composition)],
-                 mutation_strategy: Callable[[Composition], Composition]):
+                 crossover_strategy: Callable[[Composition, Composition], Tuple[Composition, Composition]],
+                 mutation_strategy: Callable[[Composition, float], Composition]):
         self.melody = melody
         self.fitness_function = fitness_function
         self.reproduction_function = reproduction_function
@@ -17,12 +18,11 @@ class GeneticAlgorithm:
         self.mutation_strategy = mutation_strategy
 
     def get_init_generation(self, candidates_num: int) -> List[Composition]:
-        raise NotImplementedError  # TODO
+        return [get_random_candidate(self.melody) for i in range(candidates_num)]
 
     def get_next_generation(self, candidates_fitness_sorted: List[Tuple[Composition, float]], children_num: int,
                             mutation_chance: float, best_parents_percent: float) -> List[Composition]:
         assert children_num % 2 == 0, "children_num must be even"
-        assert 0 <= mutation_chance <= 1, "mutation_chance must belong to [0:1] interval"
         assert 0 <= best_parents_percent <= 1, "best_parents_percent must belong to [0:1] interval"
         parents_num = children_num
         best_parents_num = ceil(children_num * best_parents_percent)
@@ -41,8 +41,7 @@ class GeneticAlgorithm:
             children.extend([child1, child2])
         # mutate children
         for i, child in enumerate(children):
-            if random.random() < mutation_chance:
-                children[i] = self.mutation_strategy(child)
+            children[i] = self.mutation_strategy(child, mutation_chance)
         return children
 
     def solve(self, candidates_num: int, mutation_chance: float, best_parents_percent: float,
