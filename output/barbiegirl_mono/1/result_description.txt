@@ -1,0 +1,11 @@
+Config:
+	generation_size = 50
+	mutation_chance = 0.005
+	best_parents_num = 10
+	random_parents_num = 1
+	iterations_num = 1
+	EVENT_TO_AWARD_WEIGHTS = {'missing_accompaniment_for_melody_tick': 1, 'excessive_accompaniment_tick_for_melody': 10, 'too_big_chord_drop': 20, 'accompaniment_tick_is_not_below_melody': 5, 'dissonance_inside': 0, 'empty_accompaniment': 1000, 'dissonance_with_melody': 3, 'accompaniment_chord_exists': -1}
+
+Results:
+	Accompaniment fitness: 115
+	Execution time: 0.033762216567993164

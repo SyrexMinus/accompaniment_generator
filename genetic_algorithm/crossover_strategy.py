@@ -11,7 +11,7 @@ def make_crossover(candidate1: Composition, candidate2: Composition) -> Tuple[Co
     child2_notes = []
     cand1_notes_as = candidate1.notes_at
     cand2_notes_as = candidate2.notes_at
-    times = set(cand1_notes_as.keys() + cand2_notes_as.keys())
+    times = set(list(cand1_notes_as.keys()) + list(cand2_notes_as.keys()))
     for time in times:
         if random() > 0.5:
             child1_notes += cand2_notes_as.get(time, [])

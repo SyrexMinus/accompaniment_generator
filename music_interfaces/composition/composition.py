@@ -86,7 +86,8 @@ class Composition:
     @property
     def duration(self) -> int:
         """Returns duration in ticks"""
-        return max([note.end_time for note in self.notes] + [self.min_duration])
+        return max([note.end_time for note in self.notes] +
+                   ([self.min_duration] if self.min_duration is not None else []))
 
     def clone(self):
         copy = Composition(notes=self.notes, ticks_per_beat=self.ticks_per_beat, tempo=self.tempo)
@@ -134,3 +135,13 @@ class Composition:
             else:
                 raise TypeError(f"Cannot read note_message with type {note_message.type}")
         return notes, midi_file.ticks_per_beat, midi_file.tracks[0][1].tempo
+
+    def __add__(self, other):
+        assert isinstance(other, Composition), "Composition is possible to add only to another Composition"
+        assert other.ticks_per_beat == self.ticks_per_beat, "ticks_per_beat must be the same for each Composition"
+        assert other.tempo == self.tempo, "tempo must be the same for each Composition"
+        sum_ = self.clone()
+        if sum_.min_duration is None or (other.min_duration is not None and sum_.min_duration < other.min_duration):
+            sum_.min_duration = other.min_duration
+        sum_.notes += [note for note in other.notes]
+        return sum_

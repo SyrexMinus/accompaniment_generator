@@ -2,14 +2,16 @@ from typing import Dict
 
 from app_config import ENABLE_EMPTY_ACCOMPANIMENT, ENABLE_MISSING_ACCOMP_FOR_MELODY_TICK, \
     ENABLE_EXCESS_ACCOMP_TICK_FOR_MELODY, ENABLE_TOO_BIG_CHORD_DROP, TOO_BIG_CHORD_DROP_IN_NOTES, \
-    ENABLE_ACCOMP_TICK_NOT_BELOW_MELODY, ENABLE_DISSONANCE_INSIDE, EVENT_TO_AWARD_WEIGHTS
+    ENABLE_ACCOMP_TICK_NOT_BELOW_MELODY, ENABLE_DISSONANCE_INSIDE, EVENT_TO_AWARD_WEIGHTS, \
+    ENABLE_ACCOMPANIMENT_CHORD_EXISTS
 from music_interfaces.composition.composition import Composition
 from genetic_algorithm.fitness_function.fitness_constants import MISSING_ACCOMP_FOR_MELODY_TICK, \
     EXCESS_ACCOMP_TICK_FOR_MELODY, TOO_BIG_CHORD_DROP, ACCOMP_TICK_NOT_BELOW_MELODY, DISSONANCE_INSIDE, \
-    EMPTY_ACCOMPANIMENT, DISSONANCE_WITH_MELODY
+    EMPTY_ACCOMPANIMENT, DISSONANCE_WITH_MELODY, ACCOMPANIMENT_CHORD_EXISTS
 
 
 def fitness_function(melody: Composition, accompaniment: Composition) -> float:
+    """Less fitness means better accompaniment"""
     metrics = _calculate_metrics(melody, accompaniment)
     return _event_to_award(metrics)
 
@@ -23,6 +25,7 @@ def _calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[
         DISSONANCE_INSIDE: 0,
         EMPTY_ACCOMPANIMENT: 0,
         DISSONANCE_WITH_MELODY: 0,
+        ACCOMPANIMENT_CHORD_EXISTS: 0,
     }  # TODO add anti-metrics
     m_notes_at = melody.notes_at
     a_notes_at = accompaniment.notes_at
@@ -35,6 +38,8 @@ def _calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[
         a_notes_at[time] = sorted(notes, key=lambda note: note.note)
 
     # calculate metrics
+    if ENABLE_ACCOMPANIMENT_CHORD_EXISTS:
+        metrics[ACCOMPANIMENT_CHORD_EXISTS] += len(a_notes_at)
     if ENABLE_EMPTY_ACCOMPANIMENT:
         if len(m_notes_at) == 0:
             metrics[EMPTY_ACCOMPANIMENT] += 1
@@ -102,5 +107,7 @@ def _event_to_award(metrics: Dict[str, int]) -> float:
     award = 0
     weights = EVENT_TO_AWARD_WEIGHTS
     for metric, count in metrics.items():
-        award += weights[metric] * count
+        if metric not in weights:
+            print(f"WARNING: metric {metric} is not in weights")
+        award += weights.get(metric, 0) * count
     return award

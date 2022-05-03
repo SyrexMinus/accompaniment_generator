@@ -57,7 +57,8 @@ def make_mutation(candidate: Composition, mutation_chance: float) -> Composition
     duration_in_chords = round(candidate.duration / chord_duration)
     c_notes_at = candidate.notes_at
     notes = []
-    for time in range(duration_in_chords):
+    for i in range(duration_in_chords):
+        time = i * chord_duration
         if random.random() < mutation_chance:
             c_notes_at[time] = c_notes_at.get(time, [])
             c_notes_at[time] = mutate_chord(c_notes_at[time], start_time=time, duration=chord_duration)
@@ -74,9 +75,9 @@ def mutate_chord(chord: List[CompositionNote], **context) -> List[CompositionNot
 
 
 def _randomly_shift_chord(chord: List[CompositionNote], **context) -> List[CompositionNote]:
-    min_note = min([note.note for note in chord])
-    max_note = max([note.note for note in chord])
-    lower_shift_bound = min_note - max(0, min_note - MAX_MUTATION_SHIFT)
+    min_note = min([note.note for note in chord]) if len(chord) > 0 else 0
+    max_note = max([note.note for note in chord]) if len(chord) > 0 else 0
+    lower_shift_bound = max(0, min_note - MAX_MUTATION_SHIFT) - min_note
     upper_shift_bound = min(MAX_NOTE, max_note + MAX_MUTATION_SHIFT) - max_note
     random_shift = random.randrange(lower_shift_bound, upper_shift_bound+1)
     shifted_chord = [note.clone() for note in chord]
@@ -102,8 +103,8 @@ def _replace_chord_type_by_random(chord: List[CompositionNote], **context) -> Li
     start_time = context["start_time"]
     duration = context["duration"]
     random_chord = get_random_chord()
-    chord_lowest_note = min([note.note for note in chord])
-    r_chord_highest_note = max([note for note in random_chord])
+    chord_lowest_note = min([note.note for note in chord]) if len(chord) > 0 else 0
+    r_chord_highest_note = max([note for note in random_chord]) if len(random_chord) > 0 else 0
     shift = min(MAX_NOTE, chord_lowest_note + r_chord_highest_note) - (chord_lowest_note + r_chord_highest_note)
     replaced_chord = [CompositionNote(note=chord_lowest_note + note + shift, start_time=start_time, duration=duration)
                       for note in random_chord]
