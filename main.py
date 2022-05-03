@@ -11,12 +11,12 @@ from genetic_algorithm.mutation_strategy import make_mutation
 from music_interfaces.composition.composition import Composition
 
 # Specify inputs
-input_file_name = "barbiegirl_mono"
+input_file_name = "input1"
 generation_size = 200
 mutation_chance = 0.005
 best_parents_num = 10
 random_parents_num = 1
-iterations_num = 1000
+iterations_num = 1
 target_fitness = None
 similarity_to_single_parent = 0.5
 
@@ -34,15 +34,15 @@ print(f"Execution time: {execution_time}")
 print(f"Accompaniment fitness: {fitness}")
 
 # Save results
-save_dir_path = f"output/{input_file_name}"
+save_dir_path = f"output/{input_file_name}/"
 os.makedirs(os.path.dirname(save_dir_path), exist_ok=True)
 i = 1
 while os.path.isdir(f"{save_dir_path}/{i}"):
     i += 1
-save_dir_path = f"{save_dir_path}/{i}"
-os.mkdir(save_dir_path)
+save_dir_path = f"{save_dir_path}{i}/"
+os.makedirs(os.path.dirname(save_dir_path), exist_ok=True)
 merge = accompaniment + melody
-merge.save_midi(f"{save_dir_path}/{input_file_name}_with_accompaniment.mid")
+merge.save_midi(f"{save_dir_path}{input_file_name}_with_accompaniment.mid")
 accompaniment.save_midi(f"{save_dir_path}/{input_file_name}_accompaniment.mid")
 with open(f"{save_dir_path}/result_description.txt", "w") as description_file:
     description_file.write(f"Config:\n"

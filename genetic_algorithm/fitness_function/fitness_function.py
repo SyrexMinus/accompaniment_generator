@@ -4,12 +4,12 @@ from app_config import ENABLE_EMPTY_ACCOMPANIMENT, ENABLE_MISSING_ACCOMP_FOR_MEL
     ENABLE_EXCESS_ACCOMP_TICK_FOR_MELODY, ENABLE_TOO_BIG_CHORD_DROP, TOO_BIG_CHORD_DROP_IN_NOTES, \
     ENABLE_ACCOMP_TICK_NOT_BELOW_MELODY, ENABLE_DISSONANCE_INSIDE, EVENT_TO_AWARD_WEIGHTS, \
     ENABLE_ACCOMPANIMENT_CHORD_EXISTS, ENABLE_TOO_WIDE_ACCOMPANIMENT_RANGE, TOO_WIDE_ACCOMPANIMENT_RANGE_IN_NOTES, \
-    ENABLE_CORRECT_TRIAD_FOR_MELODY_KEY, ALLOWED_ACCOMP_TRIADS_FOR_MELODY_TONIC
+    ENABLE_CORRECT_TRIAD_FOR_MELODY_KEY, ALLOWED_ACCOMP_TRIADS_FOR_MELODY_TONIC, ENABLE_CHORD_INCLUDE_MELODY_NOTE
 from music_interfaces.composition.composition import Composition
 from genetic_algorithm.fitness_function.fitness_constants import MISSING_ACCOMP_FOR_MELODY_TICK, \
     EXCESS_ACCOMP_TICK_FOR_MELODY, TOO_BIG_CHORD_DROP, ACCOMP_TICK_NOT_BELOW_MELODY, DISSONANCE_INSIDE, \
     EMPTY_ACCOMPANIMENT, DISSONANCE_WITH_MELODY, ACCOMPANIMENT_CHORD_EXISTS, TOO_WIDE_ACCOMPANIMENT_RANGE, \
-    CORRECT_TRIAD_FOR_MELODY_KEY
+    CORRECT_TRIAD_FOR_MELODY_KEY, CHORD_INCLUDE_MELODY_NOTE
 
 
 def fitness_function(melody: Composition, accompaniment: Composition) -> float:
@@ -18,7 +18,7 @@ def fitness_function(melody: Composition, accompaniment: Composition) -> float:
     return _event_to_award(metrics)
 
 
-def calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[str, int]:
+def calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[str, float]:
     metrics = {
         MISSING_ACCOMP_FOR_MELODY_TICK: 0,
         EXCESS_ACCOMP_TICK_FOR_MELODY: 0,
@@ -30,6 +30,7 @@ def calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[s
         ACCOMPANIMENT_CHORD_EXISTS: 0,
         TOO_WIDE_ACCOMPANIMENT_RANGE: 0,  # accompaniment level metric TODO refactor to chord's level
         CORRECT_TRIAD_FOR_MELODY_KEY: 0,
+        CHORD_INCLUDE_MELODY_NOTE: 0,
     }
     m_notes_at = melody.notes_at
     a_notes_at = accompaniment.notes_at
@@ -69,7 +70,17 @@ def calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[s
         for a_time in sorted(a_notes_at.keys()):
             min_chord_note = a_notes_at[a_time][0].note
             max_chord_note = a_notes_at[a_time][-1].note
+            a_notes_as_numbers = [note.note for note in a_notes_at[a_time]]
             low_notes_sum += min_chord_note
+            if ENABLE_CHORD_INCLUDE_MELODY_NOTE:
+                melody_notes_included = 0
+                a_notes_as_chord_numbers = [note % 12 for note in a_notes_as_numbers]
+                m_notes_in_bucket = melody.notes_by_buckets.get(a_time, [])
+                for m_note in m_notes_in_bucket:
+                    if m_note.note % 12 in a_notes_as_chord_numbers:
+                        melody_notes_included += 1
+                if len(m_notes_in_bucket) > 0:
+                    metrics[CHORD_INCLUDE_MELODY_NOTE] += melody_notes_included / len(m_notes_in_bucket)
             if ENABLE_CORRECT_TRIAD_FOR_MELODY_KEY:
                 octave_note = (min_chord_note // 12) * 12
                 if [note.note - octave_note for note in a_notes_at[a_time]] in allowed_triads:
@@ -130,7 +141,7 @@ def calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[s
     return metrics
 
 
-def _event_to_award(metrics: Dict[str, int]) -> float:
+def _event_to_award(metrics: Dict[str, float]) -> float:
     award = 0
     weights = EVENT_TO_AWARD_WEIGHTS
     for metric, count in metrics.items():

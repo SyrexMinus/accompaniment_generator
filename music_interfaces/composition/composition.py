@@ -1,5 +1,6 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
+from lazy import lazy
 from mido import MidiFile, Message
 
 from music_interfaces.composition.composition_constants import MAJOR_TONIC, MINOR_TONIC
@@ -24,7 +25,7 @@ class Composition:
             self.notes, self.ticks_per_beat, self.tempo = self._read_midi_file(midi_file)
 
     @property
-    def notes_at(self):
+    def notes_at(self) -> Dict[int, List[CompositionNote]]:
         notes_at = {}
         for note in self.notes:
             notes_at[note.start_time] = notes_at.get(note.start_time, [])
@@ -41,6 +42,16 @@ class Composition:
         if self.min_duration is not None:
             mid.tracks[1][-1].time = self.min_duration - max([note.end_time for note in self.notes])
         return mid
+
+    @lazy
+    def notes_by_buckets(self) -> Dict[int, List[CompositionNote]]:
+        """Return dict of {4 quarter-start tick: notes that lie inside the 4 quarter}"""
+        bucket_notes = {}
+        for note in self.notes:
+            bucket_tick = (note.start_time // self.ticks_per_beat) * self.ticks_per_beat
+            bucket_notes[bucket_tick] = bucket_notes.get(bucket_tick, [])
+            bucket_notes[bucket_tick].append(note)
+        return bucket_notes
 
     def save_midi(self, filename: str):
         self.as_midi.save(filename)
