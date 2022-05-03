@@ -3,22 +3,14 @@ from typing import List, Union
 
 from app_config import MAX_MUTATION_SHIFT, MAX_NOTE
 from music_interfaces.composition.composition import Composition
+from music_interfaces.composition.composition_constants import MAJOR_TRIAD, MINOR_TRIAD, MAJOR_TRIAD_1I, \
+    MAJOR_TRIAD_2I, MINOR_TRIAD_1I, MINOR_TRIAD_2I, DIMINISHED_CHORD, SUS2_CHORD, SUS4_CHORD, EMPTY_CHORD
 from music_interfaces.note import CompositionNote
 
 
 def get_random_chord() -> List[int]:
-    major_triad = [0, 4, 7]
-    minor_triad = [0, 3, 7]
-    major_triad_1i = [0, 3, 8]
-    major_triad_2i = [0, 5, 9]
-    minor_triad_1i = [0, 4, 9]
-    minor_triad_2i = [0, 5, 8]
-    diminiched_chord = [0, 3, 6]
-    sus2_chord = [0, 2, 7]
-    sus4_chord = [0, 5, 7]
-    empty_chord = []
-    chords = [major_triad, minor_triad, major_triad_1i, major_triad_2i, minor_triad_1i, minor_triad_2i,
-              diminiched_chord, sus2_chord, sus4_chord, empty_chord]
+    chords = [MAJOR_TRIAD, MINOR_TRIAD, MAJOR_TRIAD_1I, MAJOR_TRIAD_2I, MINOR_TRIAD_1I, MINOR_TRIAD_2I,
+              DIMINISHED_CHORD, SUS2_CHORD, SUS4_CHORD, EMPTY_CHORD]
     return random.choice(chords)
 
 

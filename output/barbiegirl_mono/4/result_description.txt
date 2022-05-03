@@ -1,0 +1,12 @@
+Config:
+	generation_size = 100
+	mutation_chance = 0.005
+	best_parents_num = 10
+	random_parents_num = 1
+	iterations_num = 100
+	EVENT_TO_AWARD_WEIGHTS = {'missing_accompaniment_for_melody_tick': 2, 'excessive_accompaniment_tick_for_melody': 3, 'too_big_chord_drop': 30, 'accompaniment_tick_is_not_below_melody': 5, 'dissonance_inside': 0, 'empty_accompaniment': 1000, 'dissonance_with_melody': 3, 'accompaniment_chord_exists': -1, 'too_wide_accompaniment_range': 600}
+
+Results:
+	Accompaniment fitness: 617
+	Execution time: 2.544933795928955
+	Metrics: {'missing_accompaniment_for_melody_tick': 0, 'excessive_accompaniment_tick_for_melody': 1, 'too_big_chord_drop': 4, 'accompaniment_tick_is_not_below_melody': 20, 'dissonance_inside': 10, 'empty_accompaniment': 0, 'dissonance_with_melody': 0, 'accompaniment_chord_exists': 21, 'too_wide_accompaniment_range': 1}

@@ -48,8 +48,8 @@ class Composition:
     @property
     def key(self) -> Tuple[int, str]:
         """Returns the most probable key as (tonic (int[0-11]), scale (str["major"/"minor"]))"""
-        MAJOR_KEY_OFFSETS = [0, 2, 2, 1, 2, 2, 2, 1]
-        MINOR_KEY_OFFSETS = [0, 2, 1, 2, 2, 1, 2, 2]
+        MAJOR_KEY_OFFSETS = [0, 2, 4, 5, 7, 9, 11, 12]  # [0, 2, 2, 1, 2, 2, 2, 1]
+        MINOR_KEY_OFFSETS = [0, 2, 3, 5, 7, 8, 10, 12]  # [0, 2, 1, 2, 2, 1, 2, 2]
         min_note_num = self.notes[0].note
         max_note_num = self.notes[0].note
         notes_used = {}
@@ -90,7 +90,8 @@ class Composition:
                    ([self.min_duration] if self.min_duration is not None else []))
 
     def clone(self):
-        copy = Composition(notes=self.notes, ticks_per_beat=self.ticks_per_beat, tempo=self.tempo)
+        copy = Composition(notes=[note.clone() for note in self.notes], ticks_per_beat=self.ticks_per_beat,
+                           tempo=self.tempo)
         copy.min_duration = self.min_duration
         return copy
 
@@ -143,5 +144,5 @@ class Composition:
         sum_ = self.clone()
         if sum_.min_duration is None or (other.min_duration is not None and sum_.min_duration < other.min_duration):
             sum_.min_duration = other.min_duration
-        sum_.notes += [note for note in other.notes]
+        sum_.notes += [note.clone() for note in other.notes]
         return sum_

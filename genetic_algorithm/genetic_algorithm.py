@@ -10,7 +10,7 @@ from music_interfaces.composition.composition import Composition
 
 class GeneticAlgorithm:
     def __init__(self, melody: Composition, fitness_function: Callable[[Composition, Composition], float],
-                 crossover_strategy: Callable[[Composition, Composition], Tuple[Composition, Composition]],
+                 crossover_strategy: Callable[[Composition, Composition, float], Tuple[Composition, Composition]],
                  mutation_strategy: Callable[[Composition, float], Composition]):
         self.melody = melody
         self.fitness_function = fitness_function
@@ -21,23 +21,24 @@ class GeneticAlgorithm:
         return [get_random_candidate(self.melody) for i in range(candidates_num)]
 
     def get_next_generation(self, candidates_fitness_sorted: List[Tuple[Composition, float]], mutation_chance: float,
-                            best_parents_num: int, random_parents_num: int, generation_size: int) -> List[Composition]:
+                            best_parents_num: int, random_parents_num: int, generation_size: int,
+                            similarity_to_single_parent: float) -> List[Composition]:
         parents_num = best_parents_num + random_parents_num
         assert parents_num >= 2, "at least two parents should be provided to make crossover"
         assert len(candidates_fitness_sorted) >= parents_num, "parents_num can not exceed size of population"
         parents = candidates_fitness_sorted[:best_parents_num] + \
                   random.sample(candidates_fitness_sorted[best_parents_num:], random_parents_num)
-        log(f"\n\tAverage parents fitness:\t"
+        log(f"\tAverage parents fitness:\t"
             f"{sum([fitn for cand, fitn in parents]) / parents_num}")
-        log(f"\n\tAverage best parents fitness:\t"
-            f"{sum([fitn for cand, fitn in candidates_fitness_sorted[:best_parents_num]]) / best_parents_num}")
-        log(f"\n\tAverage random parents fitness:\t"
-            f"{sum([fitn for cand, fitn in candidates_fitness_sorted[best_parents_num:]]) / random_parents_num}")
+        log(f"\tAverage best parents fitness:\t"
+            f"{(sum([fitn for cand, fitn in candidates_fitness_sorted[:best_parents_num]]) / best_parents_num) if best_parents_num != 0 else 0}")
+        log(f"\tAverage random parents fitness:\t"
+            f"{(sum([fitn for cand, fitn in candidates_fitness_sorted[best_parents_num:]]) / random_parents_num) if random_parents_num != 0 else 0}")
         # crossover children
         children = []
         while len(children) < generation_size:
             parent12 = random.sample(parents, 2)
-            child1, child2 = self.crossover_strategy(parent12[0][0], parent12[1][0])
+            child1, child2 = self.crossover_strategy(parent12[0][0], parent12[1][0], similarity_to_single_parent)
             if generation_size - len(children) > 1:
                 children.extend([child1, child2])
             else:
@@ -48,7 +49,8 @@ class GeneticAlgorithm:
         return children
 
     def solve(self, generation_size: int, mutation_chance: float, best_parents_num: int, random_parents_num: int,
-              target_fitness: float = None, iterations_num: int = None) -> (Composition, float):
+              similarity_to_single_parent: float, target_fitness: float = None, iterations_num: int = None) \
+            -> (Composition, float):
         assert (target_fitness is None or iterations_num is None) and \
                (target_fitness is not None or iterations_num is not None), "exactly one of {target_fitness, " \
                                                                            "iterations_num} must be used"
@@ -73,7 +75,8 @@ class GeneticAlgorithm:
                                                               mutation_chance=mutation_chance,
                                                               best_parents_num=best_parents_num,
                                                               random_parents_num=random_parents_num,
-                                                              generation_size=generation_size)
+                                                              generation_size=generation_size,
+                                                              similarity_to_single_parent=similarity_to_single_parent)
                 ],
                 key=lambda candidate_fitness: candidate_fitness[1]
             )
