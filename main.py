@@ -11,12 +11,12 @@ from genetic_algorithm.mutation_strategy import make_mutation
 from music_interfaces.composition.composition import Composition
 
 # Specify inputs
-input_file_name = "input1"
+input_file_name = "input2"
 generation_size = 200
 mutation_chance = 0.005
 best_parents_num = 10
 random_parents_num = 1
-iterations_num = 1
+iterations_num = 1000
 target_fitness = None
 similarity_to_single_parent = 0.5
 

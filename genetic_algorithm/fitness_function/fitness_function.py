@@ -4,12 +4,14 @@ from app_config import ENABLE_EMPTY_ACCOMPANIMENT, ENABLE_MISSING_ACCOMP_FOR_MEL
     ENABLE_EXCESS_ACCOMP_TICK_FOR_MELODY, ENABLE_TOO_BIG_CHORD_DROP, TOO_BIG_CHORD_DROP_IN_NOTES, \
     ENABLE_ACCOMP_TICK_NOT_BELOW_MELODY, ENABLE_DISSONANCE_INSIDE, EVENT_TO_AWARD_WEIGHTS, \
     ENABLE_ACCOMPANIMENT_CHORD_EXISTS, ENABLE_TOO_WIDE_ACCOMPANIMENT_RANGE, TOO_WIDE_ACCOMPANIMENT_RANGE_IN_NOTES, \
-    ENABLE_CORRECT_TRIAD_FOR_MELODY_KEY, ALLOWED_ACCOMP_TRIADS_FOR_MELODY_TONIC, ENABLE_CHORD_INCLUDE_MELODY_NOTE
+    ENABLE_CORRECT_TRIAD_FOR_MELODY_KEY, ALLOWED_ACCOMP_TRIADS_FOR_MELODY_TONIC, ENABLE_CHORD_INCLUDE_MELODY_NOTE, \
+    ENABLE_PARTIAL_PROGRESSION, ENABLE_COMPLETED_PROGRESSION
 from music_interfaces.composition.composition import Composition
 from genetic_algorithm.fitness_function.fitness_constants import MISSING_ACCOMP_FOR_MELODY_TICK, \
     EXCESS_ACCOMP_TICK_FOR_MELODY, TOO_BIG_CHORD_DROP, ACCOMP_TICK_NOT_BELOW_MELODY, DISSONANCE_INSIDE, \
     EMPTY_ACCOMPANIMENT, DISSONANCE_WITH_MELODY, ACCOMPANIMENT_CHORD_EXISTS, TOO_WIDE_ACCOMPANIMENT_RANGE, \
-    CORRECT_TRIAD_FOR_MELODY_KEY, CHORD_INCLUDE_MELODY_NOTE
+    CORRECT_TRIAD_FOR_MELODY_KEY, CHORD_INCLUDE_MELODY_NOTE, COMPLETED_PROGRESSION, PARTIAL_PROGRESSION
+from music_interfaces.composition.composition_constants import PROGRESSIONS
 
 
 def fitness_function(melody: Composition, accompaniment: Composition) -> float:
@@ -31,7 +33,9 @@ def calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[s
         TOO_WIDE_ACCOMPANIMENT_RANGE: 0,  # accompaniment level metric TODO refactor to chord's level
         CORRECT_TRIAD_FOR_MELODY_KEY: 0,
         CHORD_INCLUDE_MELODY_NOTE: 0,
-    }
+        COMPLETED_PROGRESSION: 0,
+        PARTIAL_PROGRESSION: 0,
+    }  # TODO add check of высота of range
     m_notes_at = melody.notes_at
     a_notes_at = accompaniment.notes_at
     m_key_tonic, m_key_scale = melody.key
@@ -61,6 +65,25 @@ def calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[s
         for a_time in a_notes_at.keys():
             if m_notes_at.get(a_time) is None:
                 metrics[EXCESS_ACCOMP_TICK_FOR_MELODY] += 1
+    if ENABLE_PARTIAL_PROGRESSION or ENABLE_COMPLETED_PROGRESSION:
+        triad_names_by_beats = accompaniment.triad_names_by_beats
+        progression_len = 4
+        for i_four_beats in range(0, len(triad_names_by_beats) - progression_len + 1, progression_len):
+            done_partial_max = 0
+            for progression in PROGRESSIONS:
+                done_partial = 0
+                prev_min_chord_note = triad_names_by_beats[i_four_beats][0]
+                for i in range(4):
+                    delta_note = triad_names_by_beats[i_four_beats + i][0] - prev_min_chord_note
+                    triad = triad_names_by_beats[i_four_beats + i][1]
+                    done_partial += 1 if (delta_note, triad) == progression[i] else 0
+                done_partial_max = max(done_partial_max, done_partial)
+                if done_partial_max == 4:
+                    if ENABLE_COMPLETED_PROGRESSION:
+                        metrics[COMPLETED_PROGRESSION] += 1
+                    break
+            if ENABLE_PARTIAL_PROGRESSION:
+                metrics[PARTIAL_PROGRESSION] += done_partial_max / progression_len
     if len(a_notes_at) > 0:
         prev_max_chord_note = None
         prev_min_chord_note = None

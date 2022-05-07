@@ -1,9 +1,10 @@
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Optional
 
 from lazy import lazy
 from mido import MidiFile, Message
 
-from music_interfaces.composition.composition_constants import MAJOR_TONIC, MINOR_TONIC
+from music_interfaces.composition.composition_constants import MAJOR_TONIC, MINOR_TONIC, NAME_TO_CHORD, \
+    UNKNOWN_CHORD_NAME
 from music_interfaces.note import CompositionNote
 
 
@@ -43,7 +44,26 @@ class Composition:
             mid.tracks[1][-1].time = self.min_duration - max([note.end_time for note in self.notes])
         return mid
 
-    @lazy
+    @property
+    def triad_names_by_beats(self) -> List[Tuple[int, str]]:
+        notes_at = self.notes_at
+        triad_names = []
+        for time in range(0, self.duration + 1, self.ticks_per_beat):
+            current_notes = sorted(notes_at.get(time, []), key=lambda note: note.note)
+            min_chord_note = current_notes[0].note if len(current_notes) > 0 else 0
+            octave_note = (min_chord_note // 12) * 12
+            pure_notes = [note.note - octave_note for note in current_notes]
+            found = False
+            for triad_name, triad in NAME_TO_CHORD.items():
+                if pure_notes == triad:
+                    triad_names.append((min_chord_note, triad_name))
+                    found = True
+                    break
+            if not found:
+                triad_names.append((0, UNKNOWN_CHORD_NAME))
+        return triad_names
+
+    @lazy  # Attention: lazy
     def notes_by_buckets(self) -> Dict[int, List[CompositionNote]]:
         """Return dict of {4 quarter-start tick: notes that lie inside the 4 quarter}"""
         bucket_notes = {}
@@ -75,8 +95,8 @@ class Composition:
         most_similar_key_tonic = min_note_num % 12
         most_similar_key_scale = MAJOR_TONIC
         max_similarity = 0
-        considered_keys = [i for i in range(min_note_num, min_note_num-13, -1)] + \
-                          [i for i in range(min_note_num+1, max_note_num+1)]
+        considered_keys = [i for i in range(min_note_num, min_note_num - 13, -1)] + \
+                          [i for i in range(min_note_num + 1, max_note_num + 1)]
         for key in considered_keys:
             major_similarity = 0
             minor_similarity = 0
@@ -118,7 +138,7 @@ class Composition:
         for i, time in enumerate(sorted(times.keys())):
             for event in times[time]:
                 messages.append(Message(type=event[1], channel=0, note=event[0],
-                                        velocity=50 if event[1] == "note_on" else 0, time=time-prev_time))
+                                        velocity=50 if event[1] == "note_on" else 0, time=time - prev_time))
                 prev_time = time
         return messages
 
