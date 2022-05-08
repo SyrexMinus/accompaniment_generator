@@ -5,12 +5,12 @@ from app_config import ENABLE_EMPTY_ACCOMPANIMENT, ENABLE_MISSING_ACCOMP_FOR_MEL
     ENABLE_ACCOMP_TICK_NOT_BELOW_MELODY, ENABLE_DISSONANCE_INSIDE, EVENT_TO_AWARD_WEIGHTS, \
     ENABLE_ACCOMPANIMENT_CHORD_EXISTS, ENABLE_TOO_WIDE_ACCOMPANIMENT_RANGE, TOO_WIDE_ACCOMPANIMENT_RANGE_IN_NOTES, \
     ENABLE_CORRECT_TRIAD_FOR_MELODY_KEY, ALLOWED_ACCOMP_TRIADS_FOR_MELODY_TONIC, ENABLE_CHORD_INCLUDE_MELODY_NOTE, \
-    ENABLE_PARTIAL_PROGRESSION, ENABLE_COMPLETED_PROGRESSION
+    ENABLE_PARTIAL_PROGRESSION, ENABLE_COMPLETED_PROGRESSION, ENABLE_TOO_LOW_CHORD, TOO_LOW_NOTE_UPPER_BOUND
 from music_interfaces.composition.composition import Composition
 from genetic_algorithm.fitness_function.fitness_constants import MISSING_ACCOMP_FOR_MELODY_TICK, \
     EXCESS_ACCOMP_TICK_FOR_MELODY, TOO_BIG_CHORD_DROP, ACCOMP_TICK_NOT_BELOW_MELODY, DISSONANCE_INSIDE, \
     EMPTY_ACCOMPANIMENT, DISSONANCE_WITH_MELODY, ACCOMPANIMENT_CHORD_EXISTS, TOO_WIDE_ACCOMPANIMENT_RANGE, \
-    CORRECT_TRIAD_FOR_MELODY_KEY, CHORD_INCLUDE_MELODY_NOTE, COMPLETED_PROGRESSION, PARTIAL_PROGRESSION
+    CORRECT_TRIAD_FOR_MELODY_KEY, CHORD_INCLUDE_MELODY_NOTE, COMPLETED_PROGRESSION, PARTIAL_PROGRESSION, TOO_LOW_CHORD
 from music_interfaces.composition.composition_constants import PROGRESSIONS
 
 
@@ -30,12 +30,13 @@ def calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[s
         EMPTY_ACCOMPANIMENT: 0,  # accompaniment level metric
         DISSONANCE_WITH_MELODY: 0,
         ACCOMPANIMENT_CHORD_EXISTS: 0,
-        TOO_WIDE_ACCOMPANIMENT_RANGE: 0,  # accompaniment level metric TODO refactor to chord's level
+        TOO_WIDE_ACCOMPANIMENT_RANGE: 0,
         CORRECT_TRIAD_FOR_MELODY_KEY: 0,
         CHORD_INCLUDE_MELODY_NOTE: 0,
         COMPLETED_PROGRESSION: 0,
         PARTIAL_PROGRESSION: 0,
-    }  # TODO add check of высота of range
+        TOO_LOW_CHORD: 0
+    }
     m_notes_at = melody.notes_at
     a_notes_at = accompaniment.notes_at
     m_key_tonic, m_key_scale = melody.key
@@ -95,6 +96,9 @@ def calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[s
             max_chord_note = a_notes_at[a_time][-1].note
             a_notes_as_numbers = [note.note for note in a_notes_at[a_time]]
             low_notes_sum += min_chord_note
+            if ENABLE_TOO_LOW_CHORD:
+                if min_chord_note <= TOO_LOW_NOTE_UPPER_BOUND:
+                    metrics[TOO_LOW_CHORD] += 1
             if ENABLE_CHORD_INCLUDE_MELODY_NOTE:
                 melody_notes_included = 0
                 a_notes_as_chord_numbers = [note % 12 for note in a_notes_as_numbers]

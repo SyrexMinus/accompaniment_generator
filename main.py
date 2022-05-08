@@ -11,7 +11,7 @@ from genetic_algorithm.mutation_strategy import make_mutation
 from music_interfaces.composition.composition import Composition
 
 # Specify inputs
-input_file_name = "input2"
+input_file_name = "barbiegirl_mono"
 generation_size = 200
 mutation_chance = 0.005
 best_parents_num = 10
