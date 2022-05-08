@@ -1,7 +1,7 @@
 from typing import List, Tuple, Dict
 
 from lazy import lazy
-from mido import MidiFile, Message
+from mido import MidiFile, Message, MidiTrack
 
 from music_interfaces.composition.composition_constants import MAJOR_TONIC, MINOR_TONIC, NAME_TO_CHORD, \
     UNKNOWN_CHORD_NAME
@@ -45,7 +45,7 @@ class Composition:
         mid = MidiFile(self.MIDI_TEMPLATE_PATH, clip=True)
         mid.ticks_per_beat = self.ticks_per_beat
         mid.tracks[0][1].tempo = self.tempo
-        mid.tracks[1] = mid.tracks[1][:2] + self._notes_to_midi_messages() + [mid.tracks[1][-1]]
+        mid.tracks[1] = mid.tracks[1][:2] + self.notes_to_midi_messages() + [mid.tracks[1][-1]]
         if self.min_duration is not None:
             mid.tracks[1][-1].time = self.min_duration - max([note.end_time for note in self.notes])
         return mid
@@ -135,7 +135,7 @@ class Composition:
         copy.min_duration = self.min_duration
         return copy
 
-    def _notes_to_midi_messages(self) -> List[Message]:
+    def notes_to_midi_messages(self) -> List[Message]:
         messages = []
         times = {}
         for note in self.notes:
@@ -186,3 +186,20 @@ class Composition:
             sum_.min_duration = other.min_duration
         sum_.notes += [note.clone() for note in other.notes]
         return sum_
+
+
+def save_two_compostitions(melody: Composition, accompaniment: Composition, filename: str):
+    """Saves two compositions as two tracks in single MIDI file."""
+    assert melody.ticks_per_beat == accompaniment.ticks_per_beat, "ticks_per_beat must be the same for each Composition"
+    assert melody.tempo == accompaniment.tempo, "tempo must be the same for each Composition"
+    assert melody.ticks_per_beat == accompaniment.ticks_per_beat, "ticks_per_beat must be the same for each Composition"
+    mid = MidiFile(melody.MIDI_TEMPLATE_PATH, clip=True)
+    mid.ticks_per_beat = melody.ticks_per_beat
+    mid.tracks[0][1].tempo = melody.tempo
+    mid.tracks[1] = mid.tracks[1][:2] + melody.notes_to_midi_messages() + [mid.tracks[1][-1]]
+    if melody.min_duration is not None:
+        mid.tracks[1][-1].time = melody.min_duration - max([note.end_time for note in melody.notes])
+    mid.tracks.append(MidiTrack(mid.tracks[1][:2] + accompaniment.notes_to_midi_messages() + [mid.tracks[1][-1]]))
+    if accompaniment.min_duration is not None:
+        mid.tracks[2][-1].time = accompaniment.min_duration - max([note.end_time for note in accompaniment.notes])
+    mid.save(filename)

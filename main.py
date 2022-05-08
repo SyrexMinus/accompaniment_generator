@@ -8,7 +8,7 @@ from genetic_algorithm.crossover_strategy import make_crossover
 from genetic_algorithm.fitness_function.fitness_function import fitness_function, calculate_metrics
 from genetic_algorithm.genetic_algorithm import GeneticAlgorithm
 from genetic_algorithm.mutation_strategy import make_mutation
-from music_interfaces.composition.composition import Composition
+from music_interfaces.composition.composition import Composition, save_two_compostitions
 
 # Specify inputs
 input_file_name = "barbiegirl_mono"
@@ -41,8 +41,7 @@ while os.path.isdir(f"{save_dir_path}/{i}"):
     i += 1
 save_dir_path = f"{save_dir_path}{i}/"
 os.makedirs(os.path.dirname(save_dir_path), exist_ok=True)
-merge = accompaniment + melody
-merge.save_midi(f"{save_dir_path}{input_file_name}_with_accompaniment.mid")
+save_two_compostitions(melody, accompaniment, f"{save_dir_path}{input_file_name}_with_accompaniment.mid")
 accompaniment.save_midi(f"{save_dir_path}/{input_file_name}_accompaniment.mid")
 with open(f"{save_dir_path}/result_description.txt", "w") as description_file:
     description_file.write(f"Config:\n"
