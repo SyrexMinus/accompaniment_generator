@@ -9,19 +9,21 @@ from music_interfaces.note import CompositionNote
 
 
 def get_random_chord() -> List[int]:
+    """Return randomly chosen triad chord as list of offsets from first note."""
     chords = [MAJOR_TRIAD, MINOR_TRIAD, MAJOR_TRIAD_1I, MAJOR_TRIAD_2I, MINOR_TRIAD_1I, MINOR_TRIAD_2I,
               DIMINISHED_CHORD, SUS2_CHORD, SUS4_CHORD, EMPTY_CHORD]
     return random.choice(chords)
 
 
 def get_random_absolute_chord() -> List[int]:
+    """Return randomly chosen triad chord as list of notes."""
     random_chord = get_random_chord()
     absolute_chord = _randomly_teleport_chord(random_chord)
     return absolute_chord
 
 
 def _get_random_chord_position(chord: Union[List[CompositionNote], List[int]]) -> int:
-    """Returns new valid random position for chord or 0 if chord is empty"""
+    """Returns new valid random position for chord or 0 if chord is empty."""
     random_position = 0
     if len(chord) > 0:
         if isinstance(chord[0], CompositionNote):
@@ -33,6 +35,7 @@ def _get_random_chord_position(chord: Union[List[CompositionNote], List[int]]) -
 
 
 def get_random_candidate(melody: Composition) -> Composition:
+    """Returns Composition of random chords placed at each beat in random keys."""
     chord_duration = melody.ticks_per_beat
     duration_in_chords = round(melody.duration / chord_duration)
     notes = []
@@ -44,6 +47,7 @@ def get_random_candidate(melody: Composition) -> Composition:
 
 
 def make_mutation(candidate: Composition, mutation_chance: float) -> Composition:
+    """Return mutated Composition. Chord at each beat is mutated with given probability."""
     assert 0 <= mutation_chance <= 1, "mutation_chance must belong to [0:1] interval"
     chord_duration = candidate.ticks_per_beat
     duration_in_chords = round(candidate.duration / chord_duration)
@@ -61,6 +65,7 @@ def make_mutation(candidate: Composition, mutation_chance: float) -> Composition
 
 
 def mutate_chord(chord: List[CompositionNote], **context) -> List[CompositionNote]:
+    """Return mutated chord. Apply random mutation on chord from [shift chord, teleport chord, replace chord]."""
     actions = [_randomly_shift_chord, _randomly_teleport_chord, _replace_chord_type_by_random]
     random_action = random.choice(actions)
     return random_action(chord, **context)
@@ -78,7 +83,8 @@ def _randomly_shift_chord(chord: List[CompositionNote], **context) -> List[Compo
     return shifted_chord
 
 
-def _randomly_teleport_chord(chord: Union[List[CompositionNote], List[int]], **context) -> Union[List[CompositionNote], List[int]]:
+def _randomly_teleport_chord(chord: Union[List[CompositionNote], List[int]], **context) \
+        -> Union[List[CompositionNote], List[int]]:
     lowest_note_num = _get_random_chord_position(chord)
     teleported_chord = []
     if len(chord) > 0:

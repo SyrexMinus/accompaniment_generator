@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, Optional
+from typing import List, Tuple, Dict
 
 from lazy import lazy
 from mido import MidiFile, Message
@@ -9,6 +9,7 @@ from music_interfaces.note import CompositionNote
 
 
 class Composition:
+    """Interface for working with track, its notes and metadata."""
     MIDI_TEMPLATE_PATH = "music_interfaces/composition/template.mid"
     min_duration: int = None
 
@@ -27,6 +28,7 @@ class Composition:
 
     @property
     def notes_at(self) -> Dict[int, List[CompositionNote]]:
+        """Returns dict of start_time: notes that has this start_time."""
         notes_at = {}
         for note in self.notes:
             notes_at[note.start_time] = notes_at.get(note.start_time, [])
@@ -35,7 +37,11 @@ class Composition:
 
     @property
     def as_midi(self) -> MidiFile:
-        # Note: order of messages in tracks matters
+        """Returns Composition converted to MidiFile.
+
+        Note: order of messages in tracks matters
+
+        """
         mid = MidiFile(self.MIDI_TEMPLATE_PATH, clip=True)
         mid.ticks_per_beat = self.ticks_per_beat
         mid.tracks[0][1].tempo = self.tempo
@@ -46,6 +52,7 @@ class Composition:
 
     @property
     def triad_names_by_beats(self) -> List[Tuple[int, str]]:
+        """Returns list of (base_note, chord_name) for each beat. Unknown chord are denoted (0, UNKNOWN_CHORD_NAME)."""
         notes_at = self.notes_at
         triad_names = []
         for time in range(0, self.duration + 1, self.ticks_per_beat):
@@ -65,7 +72,7 @@ class Composition:
 
     @lazy  # Attention: lazy
     def notes_by_buckets(self) -> Dict[int, List[CompositionNote]]:
-        """Return dict of {4 quarter-start tick: notes that lie inside the 4 quarter}"""
+        """Return dict of 4 quarter-start tick: notes that lie inside this 4 quarter-interval."""
         bucket_notes = {}
         for note in self.notes:
             bucket_tick = (note.start_time // self.ticks_per_beat) * self.ticks_per_beat
@@ -74,6 +81,7 @@ class Composition:
         return bucket_notes
 
     def save_midi(self, filename: str):
+        """Saves Composition at given path as MIDI file."""
         self.as_midi.save(filename)
 
     @property
@@ -116,11 +124,12 @@ class Composition:
 
     @property
     def duration(self) -> int:
-        """Returns duration in ticks"""
+        """Returns duration in ticks."""
         return max([note.end_time for note in self.notes] +
                    ([self.min_duration] if self.min_duration is not None else []))
 
     def clone(self):
+        """Returns exact copy of the Composition."""
         copy = Composition(notes=[note.clone() for note in self.notes], ticks_per_beat=self.ticks_per_beat,
                            tempo=self.tempo)
         copy.min_duration = self.min_duration
@@ -143,7 +152,7 @@ class Composition:
         return messages
 
     def _read_midi_file(self, midi_file: MidiFile) -> Tuple[List[CompositionNote], int, int]:
-        """Returns (notes, ticks_per_beat, tempo)"""
+        """Returns (notes, ticks_per_beat, tempo)."""
         # Note: order of messages in tracks matters
         note_messages = midi_file.tracks[1][2:-1]
         notes = []

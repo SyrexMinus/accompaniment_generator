@@ -1,5 +1,8 @@
+# Tonic names
 MAJOR_TONIC = "major"
 MINOR_TONIC = "minor"
+
+# Chords as offsets from lowest note
 # please keep chords sorted
 MAJOR_TRIAD = [0, 4, 7]
 MINOR_TRIAD = [0, 3, 7]
@@ -12,6 +15,7 @@ SUS2_CHORD = [0, 2, 7]
 SUS4_CHORD = [0, 5, 7]
 EMPTY_CHORD = []
 
+# Chord names
 MAJOR_TRIAD_NAME = "major_triad"
 MINOR_TRIAD_NAME = "minor_triad"
 MAJOR_TRIAD_1I_NAME = "major_triad_1i"
@@ -37,7 +41,7 @@ NAME_TO_CHORD = {
     EMPTY_CHORD_NAME: EMPTY_CHORD,
 }
 
-# progrssions took from https://en.wikipedia.org/wiki/List_of_chord_progressions
+# Progressions list that is took from https://en.wikipedia.org/wiki/List_of_chord_progressions
 FIFTIES_PROGRESSION = [
     (0, MAJOR_TRIAD_NAME),
     (-3, MINOR_TRIAD_NAME),
@@ -86,6 +90,7 @@ I_BVII_BVI_BVII_PROGRESSION = [
     (-4, MAJOR_TRIAD_NAME),
     (-2, MAJOR_TRIAD_NAME),
 ]
+
 PROGRESSIONS = [FIFTIES_PROGRESSION, I_V_VIM_IV_PROGRESSION, I_V_BVII_IV_PROGRESSION, ANDALUSIAN_CADENCE_PROGRESSION,
                 CIRCLE_PROGRESSION, MONTGOMERY_WARD_BRIDGE_PROGRESSION, I_VIM_IIM_V_PROGRESSION,
                 I_BVII_BVI_BVII_PROGRESSION]

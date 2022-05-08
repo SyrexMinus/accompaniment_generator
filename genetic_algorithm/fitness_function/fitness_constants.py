@@ -1,3 +1,4 @@
+# Names for fitness metrics
 MISSING_ACCOMP_FOR_MELODY_TICK = "missing_accompaniment_for_melody_tick"
 EXCESS_ACCOMP_TICK_FOR_MELODY = "excessive_accompaniment_tick_for_melody"
 TOO_BIG_CHORD_DROP = "too_big_chord_drop"

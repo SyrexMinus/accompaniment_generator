@@ -15,12 +15,13 @@ from music_interfaces.composition.composition_constants import PROGRESSIONS
 
 
 def fitness_function(melody: Composition, accompaniment: Composition) -> float:
-    """Less fitness means better accompaniment"""
+    """Returns fitness value of the accompaniment. Less fitness means better accompaniment."""
     metrics = calculate_metrics(melody, accompaniment)
     return _event_to_award(metrics)
 
 
 def calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[str, float]:
+    """Returns fitness metrics for accompaniment."""
     metrics = {
         MISSING_ACCOMP_FOR_MELODY_TICK: 0,
         EXCESS_ACCOMP_TICK_FOR_MELODY: 0,
@@ -140,20 +141,8 @@ def calculate_metrics(melody: Composition, accompaniment: Composition) -> Dict[s
                         note2_num = note2.note % 12
                         if abs(note1_num - note2_num) == 11:  # septima (big septima)
                             metrics[DISSONANCE_INSIDE] += 1
-                        # elif abs(note1_num - note2_num) == 10:  # small septima
-                        #     metrics[DISSONANCE_INSIDE] += 1
-                        # elif abs(note1_num - note2_num) == 12:  # increased septima
-                        #     metrics[DISSONANCE_INSIDE] += 1
-                        # elif abs(note1_num - note2_num) == 9:  # diminished septima
-                        #     metrics[DISSONANCE_INSIDE] += 1
                         elif abs(note1_num - note2_num) == 2:  # second (big second)
                             metrics[DISSONANCE_INSIDE] += 1
-                        # elif abs(note1_num - note2_num) == 1:  # small second
-                        #     metrics[DISSONANCE_INSIDE] += 1
-                        # elif abs(note1_num - note2_num) == 3:  # increased second
-                        #     metrics[DISSONANCE_INSIDE] += 1
-                        # elif abs(note1_num - note2_num) == 2:  # big second
-                        #     metrics[DISSONANCE_INSIDE] += 1
                         elif abs(note1_num - note2_num) == 6:  # triton
                             metrics[DISSONANCE_INSIDE] += 1
             prev_max_chord_note = max_chord_note
