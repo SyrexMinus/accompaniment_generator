@@ -102,6 +102,21 @@ The list of the used chords for the accompaniment generation is stated next:
 
 The list was compiled in accordance with the recommendations of the task.
 
+#### Progressions used
+
+Progressions are a sequence of specific chords that add euphony to accompaniments. For their appearance in the 
+accompaniment, including partial, the fitness function rewards the accompaniment. The arrangement used only 4 chord 
+progressions. The list of progressions was taken from 
+[Wikipedia](https://en.wikipedia.org/wiki/List_of_chord_progressions), namely:
+- 50s progression
+- I – V – vi – IV
+- I – IV – ♭VII – IV
+- Andalusian cadence
+- Circle progression
+- Montgomery-Ward bridge
+- I − vi − ii − V
+- I - ♭VII - ♭VI - ♭VII
+
 #### App config
 
 The set of settings has been included in the implementation for code maintainability. It includes function switches and 
