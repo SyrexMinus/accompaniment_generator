@@ -34,14 +34,16 @@ class GeneticAlgorithm:
         parents_num = best_parents_num + random_parents_num
         assert parents_num >= 2, "at least two parents should be provided to make crossover"
         assert len(candidates_fitness_sorted) >= parents_num, "parents_num can not exceed size of population"
-        parents = candidates_fitness_sorted[:best_parents_num] + \
-                  random.sample(candidates_fitness_sorted[best_parents_num:], random_parents_num)
+        random_parents = random.sample(candidates_fitness_sorted[best_parents_num:], random_parents_num)
+        best_parents = candidates_fitness_sorted[:best_parents_num]
+        parents = best_parents + random_parents
+
         log(f"\tAverage parents fitness:\t"
             f"{sum([fitn for cand, fitn in parents]) / parents_num}\n"
             f"\tAverage best parents fitness:\t"
-            f"{(sum([fitn for cand, fitn in candidates_fitness_sorted[:best_parents_num]]) / best_parents_num) if best_parents_num != 0 else 0}\n"
+            f"{(sum([fitn for cand, fitn in best_parents]) / best_parents_num) if best_parents_num != 0 else 0}\n"
             f"\tAverage random parents fitness:\t"
-            f"{(sum([fitn for cand, fitn in candidates_fitness_sorted[best_parents_num:]]) / random_parents_num) if random_parents_num != 0 else 0}")
+            f"{(sum([fitn for cand, fitn in random_parents]) / random_parents_num) if random_parents_num != 0 else 0}")
         # crossover children
         children = []
         while len(children) < generation_size:
@@ -65,9 +67,7 @@ class GeneticAlgorithm:
         Algorithm generate new offsprings until desired number of iterations is reached or target fitness is obtained.
 
         """
-        assert (target_fitness is None or iterations_num is None) and \
-               (target_fitness is not None or iterations_num is not None), "exactly one of {target_fitness, " \
-                                                                           "iterations_num} must be used"
+        assert target_fitness is not None or iterations_num is not None
         log(f"Genetic algorithm init", INFO_LEVEL)
         candidates_fitness = sorted(
             [
@@ -80,8 +80,8 @@ class GeneticAlgorithm:
         log(f"Init generation info:\n\tBest fitness:\t{best_fitness}\n\tAverage fitness:\t"
             f"{sum([fitn for cand, fitn in candidates_fitness]) / len(candidates_fitness)}")
         i = 0
-        while (target_fitness is not None and best_fitness > target_fitness) or \
-                (iterations_num is not None and i < iterations_num):
+        while (target_fitness is None or (target_fitness is not None and best_fitness > target_fitness)) and \
+              (iterations_num is None or (iterations_num is not None and i < iterations_num)):
             candidates_fitness = sorted(
                 [
                     (candidate, self.fitness_function(self.melody, candidate))

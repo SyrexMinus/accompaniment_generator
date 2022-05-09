@@ -9,6 +9,6 @@ Config:
 	EVENT_TO_AWARD_WEIGHTS = {'missing_accompaniment_for_melody_tick': 8, 'excessive_accompaniment_tick_for_melody': 4, 'too_big_chord_drop': 10, 'accompaniment_tick_is_not_below_melody': 20, 'dissonance_inside': 0, 'empty_accompaniment': 10000, 'dissonance_with_melody': 6, 'accompaniment_chord_exists': -2, 'too_wide_accompaniment_range': 10, 'correct_triad_for_melody_key': -9, 'chord_include_melody_note': -3, 'completed_progression': -1, 'partial_progression': -4, 'too_low_chord': 15}
 
 Results:
-	Accompaniment fitness: -75.5
-	Execution time: 78.304114818573
-	Metrics: {'missing_accompaniment_for_melody_tick': 9, 'excessive_accompaniment_tick_for_melody': 1, 'too_big_chord_drop': 0, 'accompaniment_tick_is_not_below_melody': 0, 'dissonance_inside': 0, 'empty_accompaniment': 0, 'dissonance_with_melody': 0, 'accompaniment_chord_exists': 12, 'too_wide_accompaniment_range': 0, 'correct_triad_for_melody_key': 11, 'chord_include_melody_note': 9.5, 'completed_progression': 0, 'partial_progression': 0.0, 'too_low_chord': 0}
+	Accompaniment fitness: -258.0
+	Execution time: 142.44979095458984
+	Metrics: {'missing_accompaniment_for_melody_tick': 3, 'excessive_accompaniment_tick_for_melody': 3, 'too_big_chord_drop': 0, 'accompaniment_tick_is_not_below_melody': 0, 'dissonance_inside': 0, 'empty_accompaniment': 0, 'dissonance_with_melody': 0, 'accompaniment_chord_exists': 24, 'too_wide_accompaniment_range': 0, 'correct_triad_for_melody_key': 21, 'chord_include_melody_note': 18.0, 'completed_progression': 0, 'partial_progression': 0.75, 'too_low_chord': 0}
