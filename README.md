@@ -16,11 +16,13 @@ The steps to obtain a music of given melody and generated accompaniment are:
 
 ## Results example
 
-The given melody: \
-[input.mp3](demo_files/input.mp3)
+The given melody:
 
-The melody with generated accompaniment: \
-[output.mp3](demo_files/output.mp3) 
+https://user-images.githubusercontent.com/57181871/167402860-f87e4b0f-1850-46c1-b918-1987e0433cd4.mp4
+
+The melody with generated accompaniment:
+
+https://user-images.githubusercontent.com/57181871/167402892-ca3c2e58-8cc5-48f0-9be0-aa89505affc8.mp4
 
 ## Project description
 
